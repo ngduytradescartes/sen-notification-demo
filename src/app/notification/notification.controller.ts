@@ -7,6 +7,7 @@ import {
   Patch,
   Param,
   Sse,
+  Body,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ParseLimitPipe } from 'src/pipelines/limit.pipe';
@@ -22,7 +23,6 @@ export class NotificationController {
   ) {}
   @Sse('sse')
   events() {
-    console.log('khoi tao SSES');
     return this.eventsService.subscribe();
   }
   @Get('/all')
@@ -33,12 +33,20 @@ export class NotificationController {
   ) {
     return this.service.getNotifications({ search, offset, limit });
   }
+  @Patch('/mark-all-as-read')
+  async markAllAsRead(@Req() request: Request) {
+    return this.service.markAllAsRead(request.body.user);
+  }
   @Patch('/:id')
   async updateNotification(
     @Req() request: Request,
     @Param() params: { id: string },
   ) {
     return this.service.updateNotification(params.id, request.body);
+  }
+  @Patch('/mark-as-read/:id')
+  async markAsRead(@Param() params: { id: string }, @Body('user') user: any) {
+    return this.service.markAsRead(params.id, user);
   }
   @Patch()
   async updateNotifications(@Req() request: Request) {

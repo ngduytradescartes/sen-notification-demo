@@ -54,9 +54,26 @@ export class NotificationService {
     return newNotification;
   }
 
+  async markAsRead(_id: string, user: string) {
+    const notification = await this.notificationModel.findById(_id);
+    if (notification.seenUser.includes(user)) return notification;
+    notification.seenUser.push(user);
+    return await notification.save();
+  }
+
   async updateNotifications(data: NotificationDto) {
     const newNotifications = await this.notificationModel
-      .updateMany({}, data, { new: true })
+      .updateMany({}, data, { new: true, runValidators: true })
+      .exec();
+    return newNotifications;
+  }
+
+  async markAllAsRead(user: string) {
+    await this.notificationModel
+      .updateMany({ seenUser: { $all: [user] } }, { $pull: { seenUser: user } })
+      .exec();
+    const newNotifications = await this.notificationModel
+      .updateMany({}, { $push: { seenUser: user } })
       .exec();
     return newNotifications;
   }

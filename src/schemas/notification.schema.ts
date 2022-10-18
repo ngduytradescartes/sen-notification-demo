@@ -14,11 +14,11 @@ export class Notification {
   @Prop({ type: Boolean, default: false })
   isPublish: string;
 
-  @Prop({ type: [String], default: [] })
+  @Prop({ type: [{ type: String, unique: true }], required: true, default: [] })
   seenUser: string[];
 
   @Prop({ type: String, default: '' })
-  url: string[];
+  url: string;
 
   @Prop({ type: Date, required: true })
   time: Date;
