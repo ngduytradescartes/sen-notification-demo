@@ -5,7 +5,7 @@ export type NotificationDocument = Notification & Document;
 
 @Schema()
 export class Notification {
-  @Prop({ type: Types.ObjectId, ref: 'Dapp' })
+  @Prop({ type: Types.ObjectId, ref: 'Dapp', required: true })
   dappId: Types.ObjectId;
 
   @Prop({ type: String, required: true })

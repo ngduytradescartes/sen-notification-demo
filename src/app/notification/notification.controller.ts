@@ -10,9 +10,11 @@ import {
   Body,
 } from '@nestjs/common';
 import { Request } from 'express';
+
 import { ParseLimitPipe } from 'src/pipelines/limit.pipe';
 import { ParseOffsetPipe } from 'src/pipelines/offset.pipe';
 import { EventsService } from '../events.service';
+import { NotificationDto } from './notification.dto';
 import { NotificationService } from './notification.service';
 
 @Controller('/notification')
@@ -53,8 +55,9 @@ export class NotificationController {
     return this.service.updateNotifications(request.body);
   }
   @Post()
-  async createNotifications(@Req() request: Request) {
-    this.eventsService.emit({ emitting: new Date().toISOString() });
-    return this.service.newNotification(request.body);
+  async createNotifications(@Body() body: NotificationDto) {
+    const notification = await this.service.newNotification(body);
+    this.eventsService.emit({ emitting: notification });
+    return notification;
   }
 }

@@ -86,6 +86,7 @@ export class NotificationService {
   async newNotification(notification: NotificationDto) {
     const newNotification = await new this.notificationModel({
       ...notification,
+      time: new Date(),
     }).save();
     return newNotification;
   }
