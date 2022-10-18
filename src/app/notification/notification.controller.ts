@@ -46,7 +46,7 @@ export class NotificationController {
   }
   @Patch('/mark-as-read/:id')
   async markAsRead(@Param() params: { id: string }, @Body('user') user: any) {
-    return this.service.markAsRead(params.id, user);
+    return this.service.markAsReadOrUnread(params.id, user);
   }
   @Patch()
   async updateNotifications(@Req() request: Request) {

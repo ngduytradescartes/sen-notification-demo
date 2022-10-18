@@ -54,9 +54,14 @@ export class NotificationService {
     return newNotification;
   }
 
-  async markAsRead(_id: string, user: string) {
+  async markAsReadOrUnread(_id: string, user: string) {
     const notification = await this.notificationModel.findById(_id);
-    if (notification.seenUser.includes(user)) return notification;
+    if (notification.seenUser.includes(user)) {
+      notification.seenUser = notification.seenUser.filter(
+        (val) => val !== user,
+      );
+      return await notification.save();
+    }
     notification.seenUser.push(user);
     return await notification.save();
   }
