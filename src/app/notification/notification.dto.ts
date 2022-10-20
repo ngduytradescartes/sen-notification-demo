@@ -1,28 +1,30 @@
-import {
-  IsString,
-  IsObject,
-  IsDate,
-  IsArray,
-  IsBoolean,
-} from 'class-validator';
+import { IsString, IsDate, IsEnum, IsObject } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 import { Types } from 'mongoose';
 
+import { NOTIFICATION_TYPE } from 'src/schemas/notification.schema';
+
 export class NotificationDto {
+  @IsEnum(NOTIFICATION_TYPE)
+  type: string;
+
   @IsObject()
-  dappId: Types.ObjectId;
+  sender: Types.ObjectId;
+
+  @IsString()
+  thumbnail: string;
+
+  @IsString()
+  title: string[];
 
   @IsString()
   content: string;
 
-  @IsBoolean()
-  isPublish: boolean;
-
-  @IsArray()
-  seen: string[];
-
   @IsString()
-  url: string;
+  action: string;
 
   @IsDate()
-  time: Date;
+  broadcastedAt: Date;
 }
+
+export class UpdateNotificationDto extends PartialType(NotificationDto) {}

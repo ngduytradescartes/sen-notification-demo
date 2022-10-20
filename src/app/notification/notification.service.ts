@@ -9,8 +9,8 @@ import {
 } from 'src/schemas/notification.schema';
 import { MAX_LIMIT } from 'src/pipelines/limit.pipe';
 import { MIN_OFFSET } from 'src/pipelines/offset.pipe';
+import { NotificationDto, UpdateNotificationDto } from './notification.dto';
 import { EnvironmentVariables } from 'src/config';
-import { NotificationDto } from './notification.dto';
 
 @Injectable()
 export class NotificationService {
@@ -33,37 +33,26 @@ export class NotificationService {
     offset?: number;
     limit?: number;
   }) {
-    console.log('chay vo services');
     const cond = search ? { ...filter, $text: { $search: search } } : filter;
-    console.log('condss: ', cond);
     const notifications = await this.notificationModel
       .find(cond)
       .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit)
-      .populate('dappId')
       .exec();
-    console.log('notifications: ', notifications);
+
     return notifications;
   }
 
-  async updateNotification(_id: string, data: NotificationDto) {
+  async getNotification(id: string) {
+    return await this.notificationModel.findById(id).exec();
+  }
+
+  async updateNotification(_id: string, data: UpdateNotificationDto) {
     const newNotification = await this.notificationModel
       .findOneAndUpdate({ _id }, data, { new: true })
       .exec();
     return newNotification;
-  }
-
-  async markAsReadOrUnread(_id: string, user: string) {
-    const notification = await this.notificationModel.findById(_id);
-    if (notification.seenUser.includes(user)) {
-      notification.seenUser = notification.seenUser.filter(
-        (val) => val !== user,
-      );
-      return await notification.save();
-    }
-    notification.seenUser.push(user);
-    return await notification.save();
   }
 
   async updateNotifications(data: NotificationDto) {
@@ -73,21 +62,28 @@ export class NotificationService {
     return newNotifications;
   }
 
-  async markAllAsRead(user: string) {
-    await this.notificationModel
-      .updateMany({ seenUser: { $all: [user] } }, { $pull: { seenUser: user } })
-      .exec();
-    const newNotifications = await this.notificationModel
-      .updateMany({}, { $push: { seenUser: user } })
-      .exec();
-    return newNotifications;
-  }
-
-  async newNotification(notification: NotificationDto) {
+  async createNotification(notification: NotificationDto) {
     const newNotification = await new this.notificationModel({
       ...notification,
       time: new Date(),
     }).save();
     return newNotification;
+  }
+
+  async getOldestNotification() {
+    return await this.notificationModel.findOne({}).sort({ createdAt: 1 });
+  }
+
+  async getLatestNotification() {
+    return await this.notificationModel.findOne({}).sort({ createdAt: -1 });
+  }
+
+  async getAdjacentNotification(recordId?: string, limit = 1) {
+    if (!recordId) return [];
+    return await this.notificationModel
+      .find({ _id: { $gt: recordId } })
+      .sort({ _id: 1 })
+      .limit(limit)
+      .exec();
   }
 }

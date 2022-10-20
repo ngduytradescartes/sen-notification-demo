@@ -3,25 +3,30 @@ import { Types } from 'mongoose';
 
 export type NotificationDocument = Notification & Document;
 
-@Schema()
+export const NOTIFICATION_TYPE = ['sentre'];
+
+@Schema({ timestamps: true })
 export class Notification {
-  @Prop({ type: Types.ObjectId, ref: 'Dapp', required: true })
-  dappId: Types.ObjectId;
+  @Prop({ type: String, required: true, enum: NOTIFICATION_TYPE })
+  type: string;
+
+  @Prop({ type: Types.ObjectId, required: true })
+  sender: Types.ObjectId;
+
+  @Prop({ type: String })
+  thumbnail: string;
+
+  @Prop({ type: String, required: true })
+  title: string;
 
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Boolean, default: false })
-  isPublish: string;
-
-  @Prop({ type: [{ type: String, unique: true }], required: true, default: [] })
-  seenUser: string[];
-
   @Prop({ type: String, default: '' })
-  url: string;
+  action: string;
 
   @Prop({ type: Date, required: true })
-  time: Date;
+  broadcastedAt: Date;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

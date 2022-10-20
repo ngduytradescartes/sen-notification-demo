@@ -3,18 +3,16 @@ import {
   Get,
   Query,
   Post,
-  Req,
   Patch,
   Param,
   Sse,
   Body,
 } from '@nestjs/common';
-import { Request } from 'express';
 
 import { ParseLimitPipe } from 'src/pipelines/limit.pipe';
 import { ParseOffsetPipe } from 'src/pipelines/offset.pipe';
 import { EventsService } from '../events.service';
-import { NotificationDto } from './notification.dto';
+import { NotificationDto, UpdateNotificationDto } from './notification.dto';
 import { NotificationService } from './notification.service';
 
 @Controller('/notification')
@@ -23,10 +21,12 @@ export class NotificationController {
     private readonly service: NotificationService,
     private readonly eventsService: EventsService,
   ) {}
+  // Initialize SSE
   @Sse('sse')
   events() {
     return this.eventsService.subscribe();
   }
+  // User route
   @Get('/all')
   async getNotifications(
     @Query('offset', ParseOffsetPipe) offset: number,
@@ -35,29 +35,19 @@ export class NotificationController {
   ) {
     return this.service.getNotifications({ search, offset, limit });
   }
-  @Patch('/mark-all-as-read')
-  async markAllAsRead(@Req() request: Request) {
-    return this.service.markAllAsRead(request.body.user);
-  }
+
+  // Admin Route
   @Patch('/:id')
   async updateNotification(
-    @Req() request: Request,
+    @Body() body: UpdateNotificationDto,
     @Param() params: { id: string },
   ) {
-    return this.service.updateNotification(params.id, request.body);
-  }
-  @Patch('/mark-as-read/:id')
-  async markAsRead(@Param() params: { id: string }, @Body('user') user: any) {
-    return this.service.markAsReadOrUnread(params.id, user);
-  }
-  @Patch()
-  async updateNotifications(@Req() request: Request) {
-    return this.service.updateNotifications(request.body);
+    return this.service.updateNotification(params.id, body);
   }
   @Post()
   async createNotifications(@Body() body: NotificationDto) {
-    const notification = await this.service.newNotification(body);
-    this.eventsService.emit({ emitting: notification });
+    const notification = await this.service.createNotification(body);
+    this.eventsService.emit(notification);
     return notification;
   }
 }
